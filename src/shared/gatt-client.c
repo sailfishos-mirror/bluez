@@ -1206,7 +1206,7 @@ static bool discovery_parse_services(struct discovery_op *op, bool primary,
 		if (!attr) {
 			gatt_db_clear_range(client->db, start, end);
 			attr = gatt_db_insert_service(client->db, start, &uuid,
-							false, end - start + 1);
+						primary, end - start + 1);
 			if (!attr) {
 				DBG(client, "Failed to store service");
 				return false;
