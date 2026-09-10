@@ -859,8 +859,19 @@ endif
 TESTS = $(unit_tests)
 AM_TESTS_ENVIRONMENT = MALLOC_CHECK_=3 MALLOC_PERTURB_=69
 
+# Number of tests to run concurrently, override with e.g. CHECK_JOBS=1 to get
+# a serial run.
+CHECK_JOBS ?= $(shell nproc 2>/dev/null || echo 4)
+
+# The automake test harness spawns the individual tests from a sub-make, so
+# passing -j to it is enough to run the unit tests in parallel.
+check-TESTS recheck: AM_MAKEFLAGS += -j$(CHECK_JOBS)
+
+# The functional tests are parallelized by pytest-xdist, loadgroup is required
+# since pytest-bluezenv groups the tests sharing a host/VM setup together.
 check-functional: all
 	python3 -m pytest "$(srcdir)/test/functional" -v \
+		-n $(CHECK_JOBS) --dist loadgroup \
 		-m "not tester" \
 		--kernel="$(FUNCTIONAL_TESTING_KERNEL)" \
 		--bluez-build-dir="$(top_builddir)" \
